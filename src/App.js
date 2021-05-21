@@ -4,16 +4,14 @@ import List from './components/List';
 import ListItem from './components/ListItem';
 import Buttons from './components/Buttons';
 import { bindActionCreators } from 'redux';
-
 import * as actions from './actions';
-import {delTodos} from "./actions";
 
 const App = (props) => {
   const [todoList, setTodoList] = useState({
     inProgress: [],
     done: [],
   });
-  const { setTodos, todos, startLoad, fetching, endLoad, delTodos, startTodos, searchTodos } = props;
+  const { setTodos, todos, startLoad, fetching, endLoad, delTodos, startTodos, searchTodos, addTodos } = props;
   const addInputRef = useRef();
   const searchInputRef = useRef();
 
@@ -23,7 +21,6 @@ const App = (props) => {
       const { in_progress, done } = await fetch('/todos.json').then(res =>
         res.json()
       );
-      // setTodoList(state => ({ ...state, inProgress: in_progress, done }));
       setTodos({
         in_progress,
         done,
@@ -73,6 +70,10 @@ const App = (props) => {
   const deleteHandler = id => {
     delTodos(id);
   }
+  const addHandler = () => {
+    addTodos(addInputRef.current.value);
+    addInputRef.current.value = '';
+  }
 
   return (
     <div className='container'>
@@ -91,7 +92,6 @@ const App = (props) => {
                       placeholder='Search...'
                   />
               </div>
-
             <div className='form-group'>
               <label htmlFor='addInput'>New Todo Item: </label>
               <input
@@ -102,30 +102,42 @@ const App = (props) => {
                 placeholder='New todo name'
               />
             </div>
-            <button type='button' className='btn btn-success pull-right'>
-              Add New Item
-            </button>
+            <Buttons variant="btn btn-success pull-right" text="Add New Item" type="button" onclick={addHandler}/>
           </form>
         </div>
       </div>
       <hr />
       <div className='row'>
         <div className='col-xs-12 col-sm-6'>
-          <h3>Todos in progress {1}</h3>
+          <h3>Todos in progress</h3>
           {fetching ? (
             loading
           ) : (
             <List>
               {todos.in_progress.map(item => {
                 const { id } = item;
-                return (
-                  <ListItem
-                    key={id}
-                    item={item}
-                    next={todos.in_progress[1] ? todos.in_progress[1] : ""}
-                    render={renderInProgressItem}
-                  />
-                );
+                if(todos.in_progress.length === 1) {
+                  return (
+                      <>
+                        <ListItem
+                            key={id}
+                            item={item}
+                            next={todos.in_progress[1] ? todos.in_progress[1] : ""}
+                            render={renderInProgressItem}
+                        />
+                        <Buttons variant="btn btn-success" text="Complete" onclick={() => startHandler(id)}/>
+                      </>
+                  );
+                } else {
+                  return (
+                      <ListItem
+                          key={id}
+                          item={item}
+                          next={todos.in_progress[1] ? todos.in_progress[1] : ""}
+                          render={renderInProgressItem}
+                      />
+                  );
+                }
               })}
             </List>
           )}
@@ -133,7 +145,6 @@ const App = (props) => {
         </div>
         <div className='col-xs-12 col-sm-6'>
           <h3>Done</h3>
-
           {fetching ? (
             loading
           ) : (
@@ -143,7 +154,6 @@ const App = (props) => {
               ))}
             </List>
           )}
-
           <p>Done: {todos ? todos.done.length : 0}</p>
         </div>
       </div>
@@ -157,7 +167,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => {
-  const { startLoad, endLoad, setTodos, delTodos, startTodos, searchTodos } = bindActionCreators(
+  const { startLoad, endLoad, setTodos, delTodos, startTodos, searchTodos, addTodos } = bindActionCreators(
     actions,
     dispatch
   );
@@ -168,6 +178,7 @@ const mapDispatchToProps = dispatch => {
     delTodos: id => delTodos(id),
     startTodos: id => startTodos(id),
     searchTodos: term => searchTodos(term),
+    addTodos: txt => addTodos(txt),
     setTodos: list => setTodos(list)
   };
 };

@@ -5,9 +5,9 @@ export const setTodos = todoItems => {
   };
 };
 
-export const makeActive = id => ({
-  type: 'MAKE_ACTIVE',
-  payload: id,
+export const addTodos = txt => ({
+  type: 'ADD_ACTIVE',
+  payload: txt,
 });
 
 export const delTodos = id => {
